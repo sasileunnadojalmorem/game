@@ -4,26 +4,26 @@
 #include <iostream>
 #include <vector>
 #include <string>
-// À©µµ¿ì Å©±â Á¤ÀÇ
+// ìœˆë„ìš° í¬ê¸° ì •ì˜
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 const int PADDLE_WIDTH = 100;
 const int PADDLE_HEIGHT = 20;
 const int BALL_SIZE = 10;
 const int BLOCK_WIDTH = 60;
-int BLOCK_HEIGHT = 20; // °ø ¼Óµµ Á¶Àı
+int BLOCK_HEIGHT = 20; // ê³µ ì†ë„ ì¡°ì ˆ
 const int NUM_BLOCKS_X = 11;
 const int NUM_BLOCKS_Y = 4;
-int startstate = 0; // ½ÃÀÛ ¸Ş´º ¼³Á¤
+int startstate = 0; // ì‹œì‘ ë©”ë‰´ ì„¤ì •
 int gameoverstate = 0;
-int levelstate = 1; // ³­ÀÌµµ ¼³Á¤
-int highscore = 0;  // ÃÖ°í Á¡¼ö
+int levelstate = 1; // ë‚œì´ë„ ì„¤ì •
+int highscore = 0;  // ìµœê³  ì ìˆ˜
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 TTF_Font* font = nullptr;
 
-// ÅØ½ºÆ®¸¦ ·»´õ¸µÇÏ´Â ÇÔ¼ö
+// í…ìŠ¤íŠ¸ë¥¼ ë Œë”ë§í•˜ëŠ” í•¨ìˆ˜
 void renderText(const std::string& message, int x, int y, SDL_Color color) {
     SDL_Surface* surface = TTF_RenderUTF8_Blended(font, message.c_str(), color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -35,47 +35,47 @@ void renderText(const std::string& message, int x, int y, SDL_Color color) {
     SDL_DestroyTexture(texture);
 }
 void renderText(const std::string& text, int y, SDL_Color color, int fontSize) {
-    // ÆùÆ® Å©±â ÁöÁ¤
+    // í°íŠ¸ í¬ê¸° ì§€ì •
     TTF_Font* font = TTF_OpenFont("arial.ttf", fontSize);
     if (!font) {
-        // ÆùÆ® ·Îµå ½ÇÆĞ Ã³¸®
-        // ¿¹: std::cerr << "Failed to load font! SDL_ttf Error: " << TTF_GetError() << std::endl;
+        // í°íŠ¸ ë¡œë“œ ì‹¤íŒ¨ ì²˜ë¦¬
+        // ì˜ˆ: std::cerr << "Failed to load font! SDL_ttf Error: " << TTF_GetError() << std::endl;
         return;
     }
 
-    // ÅØ½ºÆ® Ç¥½Ã¸¦ À§ÇÑ Ç¥¸é(surface) »ı¼º
+    // í…ìŠ¤íŠ¸ í‘œì‹œë¥¼ ìœ„í•œ í‘œë©´(surface) ìƒì„±
     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
     if (!surface) {
-        // Ç¥¸é »ı¼º ½ÇÆĞ Ã³¸®
-        // ¿¹: std::cerr << "Unable to render text surface! SDL_ttf Error: " << TTF_GetError() << std::endl;
-        TTF_CloseFont(font); // ÆùÆ® ´İ±â
+        // í‘œë©´ ìƒì„± ì‹¤íŒ¨ ì²˜ë¦¬
+        // ì˜ˆ: std::cerr << "Unable to render text surface! SDL_ttf Error: " << TTF_GetError() << std::endl;
+        TTF_CloseFont(font); // í°íŠ¸ ë‹«ê¸°
         return;
     }
 
-    // Ç¥¸éÀ» ÅØ½ºÃ³·Î º¯È¯
+    // í‘œë©´ì„ í…ìŠ¤ì²˜ë¡œ ë³€í™˜
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {
-        // ÅØ½ºÃ³ »ı¼º ½ÇÆĞ Ã³¸®
-        // ¿¹: std::cerr << "Unable to create texture from rendered text! SDL Error: " << SDL_GetError() << std::endl;
+        // í…ìŠ¤ì²˜ ìƒì„± ì‹¤íŒ¨ ì²˜ë¦¬
+        // ì˜ˆ: std::cerr << "Unable to create texture from rendered text! SDL Error: " << SDL_GetError() << std::endl;
     }
     else {
-        // ÅØ½ºÆ®ÀÇ °¡·Î Æø°ú ³ôÀÌ °è»ê
+        // í…ìŠ¤íŠ¸ì˜ ê°€ë¡œ í­ê³¼ ë†’ì´ ê³„ì‚°
         int textWidth = surface->w;
         int textHeight = surface->h;
 
-        // ÅØ½ºÆ®¸¦ È­¸é Áß¾Ó¿¡ ¹èÄ¡ÇÏ±â À§ÇÑ x ÁÂÇ¥ °è»ê
+        // í…ìŠ¤íŠ¸ë¥¼ í™”ë©´ ì¤‘ì•™ì— ë°°ì¹˜í•˜ê¸° ìœ„í•œ x ì¢Œí‘œ ê³„ì‚°
         int x = (SCREEN_WIDTH - textWidth) / 2;
 
-        // ÅØ½ºÆ® Ç¥½Ã
+        // í…ìŠ¤íŠ¸ í‘œì‹œ
         SDL_Rect renderQuad = { x, y, textWidth, textHeight };
         SDL_RenderCopy(renderer, texture, NULL, &renderQuad);
-        // ÅØ½ºÃ³ ÇØÁ¦
+        // í…ìŠ¤ì²˜ í•´ì œ
         SDL_DestroyTexture(texture);
     }
 
-    // Ç¥¸é ÇØÁ¦
+    // í‘œë©´ í•´ì œ
     SDL_FreeSurface(surface);
-    // ÆùÆ® ´İ±â
+    // í°íŠ¸ ë‹«ê¸°
     TTF_CloseFont(font);
 }
 
@@ -91,29 +91,29 @@ void renderTextCentered(const std::string& text, int y, SDL_Color color, int fon
         return;
     }
 
-    // ÅØ½ºÆ® Ç¥¸éÀÇ ³Êºñ¿Í ³ôÀÌ °¡Á®¿À±â
+    // í…ìŠ¤íŠ¸ í‘œë©´ì˜ ë„ˆë¹„ì™€ ë†’ì´ ê°€ì ¸ì˜¤ê¸°
     int textWidth = textSurface->w;
     int textHeight = textSurface->h;
 
-    // ÅØ½ºÆ®¸¦ °¡¿îµ¥ Á¤·ÄÇÏ±â À§ÇÑ x ÁÂÇ¥ °è»ê
+    // í…ìŠ¤íŠ¸ë¥¼ ê°€ìš´ë° ì •ë ¬í•˜ê¸° ìœ„í•œ x ì¢Œí‘œ ê³„ì‚°
     int x = (SCREEN_WIDTH - textWidth) / 2;
 
-    // ÅØ½ºÆ® Ç¥¸é°ú ÅØ½ºÆ® ÅØ½ºÃ³ ÇØÁ¦
+    // í…ìŠ¤íŠ¸ í‘œë©´ê³¼ í…ìŠ¤íŠ¸ í…ìŠ¤ì²˜ í•´ì œ
     SDL_FreeSurface(textSurface);
 
-    // ÅØ½ºÆ® ÅØ½ºÃ³ ·»´õ¸µ
+    // í…ìŠ¤íŠ¸ í…ìŠ¤ì²˜ ë Œë”ë§
     SDL_Rect renderRect = { x, y, textWidth, textHeight };
     SDL_RenderCopy(renderer, textTexture, nullptr, &renderRect);
 
-    // ÅØ½ºÆ® ÅØ½ºÃ³ ÇØÁ¦
+    // í…ìŠ¤íŠ¸ í…ìŠ¤ì²˜ í•´ì œ
     SDL_DestroyTexture(textTexture);
 }
 
-// ¹è°æ ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÏ´Â ÇÔ¼ö
+// ë°°ê²½ ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•˜ëŠ” í•¨ìˆ˜
 void renderBackground(const char* filePath) {
     SDL_Surface* surface = IMG_Load(filePath);
     if (!surface) {
-        std::cerr << "ÀÌ¹ÌÁö ·Îµå ½ÇÆĞ! IMG_Error: " << IMG_GetError() << std::endl;
+        std::cerr << "ì´ë¯¸ì§€ ë¡œë“œ ì‹¤íŒ¨! IMG_Error: " << IMG_GetError() << std::endl;
         return;
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -125,72 +125,72 @@ void renderBackground(const char* filePath) {
     SDL_DestroyTexture(texture);
 }
 
-// ÆĞµé Å¬·¡½º Á¤ÀÇ
+// íŒ¨ë“¤ í´ë˜ìŠ¤ ì •ì˜
 class Paddle {
 public:
-    SDL_Rect rect; // ÆĞµéÀÇ »ç°¢Çü
-    int speed; // ÆĞµéÀÇ ÀÌµ¿ ¼Óµµ
+    SDL_Rect rect; // íŒ¨ë“¤ì˜ ì‚¬ê°í˜•
+    int speed; // íŒ¨ë“¤ì˜ ì´ë™ ì†ë„
 
-    // »ı¼ºÀÚ: ÆĞµéÀÇ ÃÊ±â À§Ä¡¿Í Å©±â ¼³Á¤
+    // ìƒì„±ì: íŒ¨ë“¤ì˜ ì´ˆê¸° ìœ„ì¹˜ì™€ í¬ê¸° ì„¤ì •
     Paddle(int x, int y) : speed(25) {
         rect = { x, y, PADDLE_WIDTH, PADDLE_HEIGHT };
     }
 
-    // ÆĞµéÀ» ¿ŞÂÊÀ¸·Î ÀÌµ¿
+    // íŒ¨ë“¤ì„ ì™¼ìª½ìœ¼ë¡œ ì´ë™
     void moveLeft() {
         if (rect.x > 0) {
             rect.x -= speed;
         }
     }
 
-    // ÆĞµéÀ» ¿À¸¥ÂÊÀ¸·Î ÀÌµ¿
+    // íŒ¨ë“¤ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™
     void moveRight() {
         if (rect.x + rect.w < SCREEN_WIDTH) {
             rect.x += speed;
         }
     }
 
-    // ÆĞµéÀ» ·»´õ·¯¿¡ ±×¸®±â
+    // íŒ¨ë“¤ì„ ë Œë”ëŸ¬ì— ê·¸ë¦¬ê¸°
     void render(SDL_Renderer* renderer) const {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // ÆĞµé »ö»ó ÆÄ¶õ»ö
-        SDL_RenderFillRect(renderer, &rect); // ÆĞµé ±×¸®±â
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // íŒ¨ë“¤ ìƒ‰ìƒ íŒŒë€ìƒ‰
+        SDL_RenderFillRect(renderer, &rect); // íŒ¨ë“¤ ê·¸ë¦¬ê¸°
     }
 };
 
-// °ø Å¬·¡½º Á¤ÀÇ
+// ê³µ í´ë˜ìŠ¤ ì •ì˜
 class Ball {
 public:
-    SDL_Rect rect; // °øÀÇ À§Ä¡¿Í Å©±â¸¦ ÀúÀåÇÏ´Â SDL_Rect ±¸Á¶Ã¼
-    int xVel, yVel; // °øÀÇ ¼Óµµ
+    SDL_Rect rect; // ê³µì˜ ìœ„ì¹˜ì™€ í¬ê¸°ë¥¼ ì €ì¥í•˜ëŠ” SDL_Rect êµ¬ì¡°ì²´
+    int xVel, yVel; // ê³µì˜ ì†ë„
 
-    // °ø »ı¼ºÀÚ, °øÀÇ ÃÊ±â À§Ä¡¿Í ¼Óµµ ¼³Á¤
+    // ê³µ ìƒì„±ì, ê³µì˜ ì´ˆê¸° ìœ„ì¹˜ì™€ ì†ë„ ì„¤ì •
     Ball(int x, int y) : xVel(3), yVel(-3) {
         rect = { x, y, BALL_SIZE, BALL_SIZE };
     }
 
-    // °øÀ» ÀÌµ¿½ÃÅ°´Â ÇÔ¼ö
+    // ê³µì„ ì´ë™ì‹œí‚¤ëŠ” í•¨ìˆ˜
     void move() {
         
         rect.x += xVel;
         rect.y += yVel;
 
-        // °øÀÌ ÁÂ¿ì º®¿¡ ´ê¾ÒÀ» ¶§ ¼Óµµ ¹İÀü
+        // ê³µì´ ì¢Œìš° ë²½ì— ë‹¿ì•˜ì„ ë•Œ ì†ë„ ë°˜ì „
         if (rect.x <= 0 || rect.x + rect.w >= SCREEN_WIDTH) {
             xVel = -xVel;
         }
-        // °øÀÌ È­¸éÀÇ ÃµÀå¿¡ ´ê¾ÒÀ» ¶§ ¼Óµµ ¹İÀü
+        // ê³µì´ í™”ë©´ì˜ ì²œì¥ì— ë‹¿ì•˜ì„ ë•Œ ì†ë„ ë°˜ì „
         if (rect.y <= 0) {
             yVel = -yVel;
         }
     }
 
-    // °øÀ» ·»´õ·¯¿¡ ±×¸®´Â ÇÔ¼ö
+    // ê³µì„ ë Œë”ëŸ¬ì— ê·¸ë¦¬ëŠ” í•¨ìˆ˜
     void render(SDL_Renderer* renderer) const {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // °ø »ö»ó ³ë¶õ»ö
+        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // ê³µ ìƒ‰ìƒ ë…¸ë€ìƒ‰
         SDL_RenderFillRect(renderer, &rect);
     }
 
-    // °øÀÇ À§Ä¡¿Í ¼Óµµ¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö
+    // ê³µì˜ ìœ„ì¹˜ì™€ ì†ë„ë¥¼ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜
     void reset(int x, int y) {
         rect.x = x;
         rect.y = y;
@@ -198,64 +198,64 @@ public:
         yVel = -3;
     }
 };
-void setBallSpeed(Ball& ball, int level) {//°ø ³­ÀÌµµ¿¡ ¸Â°Ô ¼ÓµµÁ¶Àı
+void setBallSpeed(Ball& ball, int level) {//ê³µ ë‚œì´ë„ì— ë§ê²Œ ì†ë„ì¡°ì ˆ
     switch (level) {
-    case 1: // ´À¸®°Ô
+    case 1: // ëŠë¦¬ê²Œ
         ball.xVel = 3;
         ball.yVel = -3;
         break;
-    case 2: // ºü¸£°Ô
+    case 2: // ë¹ ë¥´ê²Œ
         ball.xVel = 4;
         ball.yVel = -4;
         break;
-    case 3: // ¾ÆÁÖ ºü¸£°Ô
+    case 3: // ì•„ì£¼ ë¹ ë¥´ê²Œ
         ball.xVel = 6;
         ball.yVel = -6;
         break;
     default:
-        ball.xVel = 3; // ±âº»°ª
+        ball.xVel = 3; // ê¸°ë³¸ê°’
         ball.yVel = -3;
         break;
     }
 }
 
 
-// ºí·Ï Å¬·¡½º Á¤ÀÇ
+// ë¸”ë¡ í´ë˜ìŠ¤ ì •ì˜
 class Block {
 public:
-    SDL_Rect rect;  // ºí·ÏÀÇ À§Ä¡¿Í Å©±â¸¦ ÀúÀåÇÏ´Â SDL_Rect ±¸Á¶Ã¼
-    bool destroyed; // ºí·ÏÀÌ ÆÄ±«µÇ¾ú´ÂÁö ¿©ºÎ
-    bool special;   // Æ¯¼ö ºí·Ï ¿©ºÎ
-    int strength;   // °­ÇÑ ºí·ÏÀÇ °­µµ (¸î ¹ø ¸Â¾Æ¾ß ±úÁö´ÂÁö)
-    SDL_Color color; // ºí·ÏÀÇ »ö»ó
+    SDL_Rect rect;  // ë¸”ë¡ì˜ ìœ„ì¹˜ì™€ í¬ê¸°ë¥¼ ì €ì¥í•˜ëŠ” SDL_Rect êµ¬ì¡°ì²´
+    bool destroyed; // ë¸”ë¡ì´ íŒŒê´´ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+    bool special;   // íŠ¹ìˆ˜ ë¸”ë¡ ì—¬ë¶€
+    int strength;   // ê°•í•œ ë¸”ë¡ì˜ ê°•ë„ (ëª‡ ë²ˆ ë§ì•„ì•¼ ê¹¨ì§€ëŠ”ì§€)
+    SDL_Color color; // ë¸”ë¡ì˜ ìƒ‰ìƒ
 
-    // ºí·Ï »ı¼ºÀÚ, ÃÊ±â À§Ä¡ ¼³Á¤ ¹× ÆÄ±« ¿©ºÎ ÃÊ±âÈ­
+    // ë¸”ë¡ ìƒì„±ì, ì´ˆê¸° ìœ„ì¹˜ ì„¤ì • ë° íŒŒê´´ ì—¬ë¶€ ì´ˆê¸°í™”
     Block(int x, int y, bool isSpecial, int blockStrength = 1) : destroyed(false), special(isSpecial), strength(blockStrength) {
         rect = { x, y, BLOCK_WIDTH, BLOCK_HEIGHT };
-        // ºí·Ï »ö»ó ¼³Á¤
+        // ë¸”ë¡ ìƒ‰ìƒ ì„¤ì •
         if (special) {
-            color = { 255, 0, 255, 255 }; // Æ¯¼ö ºí·ÏÀÇ »ö»ó (º¸¶ó»ö)
+            color = { 255, 0, 255, 255 }; // íŠ¹ìˆ˜ ë¸”ë¡ì˜ ìƒ‰ìƒ (ë³´ë¼ìƒ‰)
         }
         else if (blockStrength > 1) {
-            color = { 0, 0, 255, 255 }; // °­ÇÑ ºí·ÏÀÇ »ö»ó (ÆÄ¶õ»ö)
+            color = { 0, 0, 255, 255 }; // ê°•í•œ ë¸”ë¡ì˜ ìƒ‰ìƒ (íŒŒë€ìƒ‰)
         }
         else {
-            color = { 0, 255, 0, 255 }; // ÀÏ¹İ ºí·ÏÀÇ »ö»ó (³ì»ö)
+            color = { 0, 255, 0, 255 }; // ì¼ë°˜ ë¸”ë¡ì˜ ìƒ‰ìƒ (ë…¹ìƒ‰)
         }
     }
 
-    // ºí·ÏÀ» ·»´õ·¯¿¡ ±×¸®´Â ÇÔ¼ö
+    // ë¸”ë¡ì„ ë Œë”ëŸ¬ì— ê·¸ë¦¬ëŠ” í•¨ìˆ˜
     void render(SDL_Renderer* renderer) const {
-        if (!destroyed) {  // ºí·ÏÀÌ ÆÄ±«µÇÁö ¾Ê¾ÒÀ¸¸é
-            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a); // ºí·ÏÀÇ »ö»ó ¼³Á¤
-            SDL_RenderFillRect(renderer, &rect); // ºí·Ï ±×¸®±â
+        if (!destroyed) {  // ë¸”ë¡ì´ íŒŒê´´ë˜ì§€ ì•Šì•˜ìœ¼ë©´
+            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a); // ë¸”ë¡ì˜ ìƒ‰ìƒ ì„¤ì •
+            SDL_RenderFillRect(renderer, &rect); // ë¸”ë¡ ê·¸ë¦¬ê¸°
         }
     }
-    // °­ÇÑ ºí·ÏÀÇ °­µµ¸¦ °¨¼Ò½ÃÅ°°í »ö»óÀ» ¿¬ÇÏ°Ô ¸¸µå´Â ÇÔ¼ö
+    // ê°•í•œ ë¸”ë¡ì˜ ê°•ë„ë¥¼ ê°ì†Œì‹œí‚¤ê³  ìƒ‰ìƒì„ ì—°í•˜ê²Œ ë§Œë“œëŠ” í•¨ìˆ˜
     void decreaseStrength() {
         if (strength > 1) {
             strength--;
-            // °­µµ¿¡ µû¶ó »ö»óÀ» ¿¬ÇÏ°Ô ¸¸µì´Ï´Ù.
+            // ê°•ë„ì— ë”°ë¼ ìƒ‰ìƒì„ ì—°í•˜ê²Œ ë§Œë“­ë‹ˆë‹¤.
             color.r /= 2;
             color.g /= 2;
             color.b /= 2;
@@ -263,22 +263,22 @@ public:
     }
 };
 
-// µÎ SDL_Rect °´Ã¼°¡ Ãæµ¹ÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+// ë‘ SDL_Rect ê°ì²´ê°€ ì¶©ëŒí•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
 bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
     return SDL_HasIntersection(&a, &b);
 }
 
-// Æ¯¼ö ºí·Ï »ı¼º
+// íŠ¹ìˆ˜ ë¸”ë¡ ìƒì„±
 void createSpecialBlock(std::vector<Block>& blocks, int x, int y) {
     blocks.emplace_back(x, y, true);
 }
 
-// °­ÇÑ ºí·Ï »ı¼º
+// ê°•í•œ ë¸”ë¡ ìƒì„±
 void createStrongBlock(std::vector<Block>& blocks, int x, int y) {
-    blocks.emplace_back(x, y, false, 3); // °­µµ¸¦ 3À¸·Î ¼³Á¤ÇÏ¿© 3¹ø ¸Â¾Æ¾ß ±úÁöµµ·Ï ÇÔ
+    blocks.emplace_back(x, y, false, 3); // ê°•ë„ë¥¼ 3ìœ¼ë¡œ ì„¤ì •í•˜ì—¬ 3ë²ˆ ë§ì•„ì•¼ ê¹¨ì§€ë„ë¡ í•¨
 }
 
-// ÁÖº¯ ºí·Ï ÆÄ±«
+// ì£¼ë³€ ë¸”ë¡ íŒŒê´´
 void destroySurroundingBlocks(std::vector<Block>& blocks, int x, int y) {
     const int range = 40;
     SDL_Rect surroundingArea = { x - range, y - range, BLOCK_WIDTH + range * 2, BLOCK_HEIGHT + range * 2 };
@@ -290,18 +290,18 @@ void destroySurroundingBlocks(std::vector<Block>& blocks, int x, int y) {
     }
 }
 
-// °ÔÀÓ ÃÊ±âÈ­
+// ê²Œì„ ì´ˆê¸°í™”
 void initializeGame(std::vector<Block>& blocks) {
-    blocks.clear(); // ±âÁ¸ ºí·Ï ÃÊ±âÈ­
+    blocks.clear(); // ê¸°ì¡´ ë¸”ë¡ ì´ˆê¸°í™”
 
-    // ³­¼ö »ı¼º±â ÃÊ±âÈ­
+    // ë‚œìˆ˜ ìƒì„±ê¸° ì´ˆê¸°í™”
     std::srand(std::time(nullptr));
 
-    // ºí·Ï »ı¼º
+    // ë¸”ë¡ ìƒì„±
     for (int i = 0; i < NUM_BLOCKS_X; ++i) {
         for (int j = 0; j < NUM_BLOCKS_Y; ++j) {
-            // ºí·ÏÀÇ »ı¼º È®·ü ¼³Á¤ (70%´Â ÀÏ¹İ, 20%´Â °­ÇÑ, 10%´Â Æ¯¼ö)
-            int blockType = std::rand() % 100 + 1; // 1ºÎÅÍ 100±îÁöÀÇ ³­¼ö »ı¼º
+            // ë¸”ë¡ì˜ ìƒì„± í™•ë¥  ì„¤ì • (70%ëŠ” ì¼ë°˜, 20%ëŠ” ê°•í•œ, 10%ëŠ” íŠ¹ìˆ˜)
+            int blockType = std::rand() % 100 + 1; // 1ë¶€í„° 100ê¹Œì§€ì˜ ë‚œìˆ˜ ìƒì„±
             if (blockType <= 70) {
                 blocks.emplace_back(i * (BLOCK_WIDTH + 5) + 50, j * (BLOCK_HEIGHT + 5) + 50, false);
             }
@@ -317,28 +317,28 @@ void initializeGame(std::vector<Block>& blocks) {
 void levelstateMenu() {
     bool quit = false;
     SDL_Event e;
-    int selectedOption = 0; // ¼±ÅÃµÈ ¿É¼Ç (0: Hard, 1: Normal, 2: Easy, 3: Exit)
+    int selectedOption = 0; // ì„ íƒëœ ì˜µì…˜ (0: Hard, 1: Normal, 2: Easy, 3: Exit)
 
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
-                startstate = -1; // ÇÁ·Î±×·¥ Á¾·á
+                startstate = -1; // í”„ë¡œê·¸ë¨ ì¢…ë£Œ
             }
             else if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_UP:
-                    selectedOption = (selectedOption - 1 + 4) % 4; // À§ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption - 1 + 4) % 4; // ìœ„ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_DOWN:
-                    selectedOption = (selectedOption + 1) % 4; // ¾Æ·¡ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption + 1) % 4; // ì•„ë˜ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_RETURN:
                     if (selectedOption == 3) {
-                        quit = true; // Á¾·á ¿É¼Ç ¼±ÅÃ ½Ã ¸Ş´º Á¾·á
+                        quit = true; // ì¢…ë£Œ ì˜µì…˜ ì„ íƒ ì‹œ ë©”ë‰´ ì¢…ë£Œ
                     }
                     else {
-                        // ¼±ÅÃµÈ ³­ÀÌµµ¿¡ µû¶ó levelstate º¯°æ
+                        // ì„ íƒëœ ë‚œì´ë„ì— ë”°ë¼ levelstate ë³€ê²½
                         switch (selectedOption) {
                         case 0:
                             levelstate = 3; // Hard
@@ -356,10 +356,10 @@ void levelstateMenu() {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); // ¹è°æ»ö º¸¶ó»ö
+        SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); // ë°°ê²½ìƒ‰ ë³´ë¼ìƒ‰
         SDL_RenderClear(renderer);
 
-        // ÇöÀç ³­ÀÌµµ Ç¥½Ã
+        // í˜„ì¬ ë‚œì´ë„ í‘œì‹œ
         renderText("Current Difficulty:", SCREEN_WIDTH / 2 - 100, 100, { 255, 255, 255, 255 });
         std::string currentDifficulty;
         switch (levelstate) {
@@ -375,7 +375,7 @@ void levelstateMenu() {
         }
         renderText(currentDifficulty.c_str(), SCREEN_WIDTH / 2 - 30, 150, { 255, 255, 255, 255 });
 
-        // °¢ ³­ÀÌµµ ¿É¼Ç Ç¥½Ã
+        // ê° ë‚œì´ë„ ì˜µì…˜ í‘œì‹œ
         renderText("Hard", SCREEN_WIDTH / 2 - 30, 250, selectedOption == 0 ? SDL_Color{ 255, 0, 0, 255 } : SDL_Color{ 255, 255, 255, 255 });
         renderText("Normal", SCREEN_WIDTH / 2 - 30, 300, selectedOption == 1 ? SDL_Color{ 255, 0, 0, 255 } : SDL_Color{ 255, 255, 255, 255 });
         renderText("Easy", SCREEN_WIDTH / 2 - 30, 350, selectedOption == 2 ? SDL_Color{ 255, 0, 0, 255 } : SDL_Color{ 255, 255, 255, 255 });
@@ -384,16 +384,16 @@ void levelstateMenu() {
         SDL_RenderPresent(renderer);
     }
 
-    startstate = 0; // levelstateMenu Á¾·á ÈÄ ¸Ş´º·Î µ¹¾Æ°¡±â
+    startstate = 0; // levelstateMenu ì¢…ë£Œ í›„ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°
 }
 
-// °ÔÀÓ ¿À¹ö È­¸é ÇÔ¼ö
+// ê²Œì„ ì˜¤ë²„ í™”ë©´ í•¨ìˆ˜
 void gameover(int score) {
     bool quit = false;
     SDL_Event e;
-    int selectedOption = 0; // ¼±ÅÃµÈ ¿É¼Ç (0: ´Ù½Ã ½Ãµµ, 1: Á¾·á)
+    int selectedOption = 0; // ì„ íƒëœ ì˜µì…˜ (0: ë‹¤ì‹œ ì‹œë„, 1: ì¢…ë£Œ)
 
-    // ¹è°æ ÀÌ¹ÌÁö Ç¥½Ã¸¦ À§ÇÑ Ç¥¸é(surface)
+    // ë°°ê²½ ì´ë¯¸ì§€ í‘œì‹œë¥¼ ìœ„í•œ í‘œë©´(surface)
     SDL_Surface* backgroundSurface = nullptr;
 
     if (score >= 40) {
@@ -405,23 +405,23 @@ void gameover(int score) {
     }
    
     if (!backgroundSurface) {
-        // ÀÌ¹ÌÁö ·Îµå ½ÇÆĞ Ã³¸®
-        // ¿¹: std::cerr << "Unable to load background image! SDL_image Error: " << IMG_GetError() << std::endl;
+        // ì´ë¯¸ì§€ ë¡œë“œ ì‹¤íŒ¨ ì²˜ë¦¬
+        // ì˜ˆ: std::cerr << "Unable to load background image! SDL_image Error: " << IMG_GetError() << std::endl;
     }
     else {
-        // ¹è°æ ÀÌ¹ÌÁö Ç¥½Ã¸¦ À§ÇÑ ÅØ½ºÃ³ »ı¼º
+        // ë°°ê²½ ì´ë¯¸ì§€ í‘œì‹œë¥¼ ìœ„í•œ í…ìŠ¤ì²˜ ìƒì„±
         SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
         if (!backgroundTexture) {
-            // ÅØ½ºÃ³ »ı¼º ½ÇÆĞ Ã³¸®
-            // ¿¹: std::cerr << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << std::endl;
+            // í…ìŠ¤ì²˜ ìƒì„± ì‹¤íŒ¨ ì²˜ë¦¬
+            // ì˜ˆ: std::cerr << "Unable to create texture from surface! SDL Error: " << SDL_GetError() << std::endl;
         }
         else {
-            // ¹è°æ ÀÌ¹ÌÁö Ç¥½Ã
+            // ë°°ê²½ ì´ë¯¸ì§€ í‘œì‹œ
             SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
-            // ÅØ½ºÃ³ ÇØÁ¦
+            // í…ìŠ¤ì²˜ í•´ì œ
             SDL_DestroyTexture(backgroundTexture);
         }
-        // Ç¥¸é ÇØÁ¦
+        // í‘œë©´ í•´ì œ
         SDL_FreeSurface(backgroundSurface);
     }
     if (score > highscore) {
@@ -433,23 +433,23 @@ void gameover(int score) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
-                startstate = -1; // ÇÁ·Î±×·¥ Á¾·á
+                startstate = -1; // í”„ë¡œê·¸ë¨ ì¢…ë£Œ
             }
             else if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_UP:
-                    selectedOption = (selectedOption - 1 + 2) % 2; // À§ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption - 1 + 2) % 2; // ìœ„ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_DOWN:
-                    selectedOption = (selectedOption + 1) % 2; // ¾Æ·¡ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption + 1) % 2; // ì•„ë˜ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_RETURN:
                     if (selectedOption == 0) {
-                        void gameStart(); // ´Ù½Ã ½Ãµµ
+                        void gameStart(); // ë‹¤ì‹œ ì‹œë„
                         quit = true;
                     }
                     else if (selectedOption == 1) {
-                        startstate = -1; // ÇÁ·Î±×·¥ Á¾·á
+                        startstate = -1; // í”„ë¡œê·¸ë¨ ì¢…ë£Œ
                         quit = true;
                     }
                     break;
@@ -457,48 +457,48 @@ void gameover(int score) {
             }
         }
 
-        // Á¡¼ö ÅØ½ºÆ®
+        // ì ìˆ˜ í…ìŠ¤íŠ¸
         renderTextCentered("High Score: " + std::to_string(highscore), 100, { 255, 255, 255, 255 });
         renderTextCentered("Score: " + std::to_string(score), 200, { 255, 255, 255, 255 });
 
-        // ´Ù½Ã ½Ãµµ ÅØ½ºÆ®
-        SDL_Color retryColor = { 255, 255, 255, 255 }; // ±âº» »ö»ó Èò»ö
+        // ë‹¤ì‹œ ì‹œë„ í…ìŠ¤íŠ¸
+        SDL_Color retryColor = { 255, 255, 255, 255 }; // ê¸°ë³¸ ìƒ‰ìƒ í°ìƒ‰
         if (selectedOption == 0) {
-            retryColor = { 255, 0, 0, 255 }; // ¼±ÅÃµÈ Ç×¸ñ »¡°£»ö
+            retryColor = { 255, 0, 0, 255 }; // ì„ íƒëœ í•­ëª© ë¹¨ê°„ìƒ‰
         }
         renderTextCentered("Retry", 400, retryColor);
 
-        // Á¾·á ÅØ½ºÆ®
-        SDL_Color quitColor = { 255, 255, 255, 255 }; // ±âº» »ö»ó Èò»ö
+        // ì¢…ë£Œ í…ìŠ¤íŠ¸
+        SDL_Color quitColor = { 255, 255, 255, 255 }; // ê¸°ë³¸ ìƒ‰ìƒ í°ìƒ‰
         if (selectedOption == 1) {
-            quitColor = { 255, 0, 0, 255 }; // ¼±ÅÃµÈ Ç×¸ñ »¡°£»ö
+            quitColor = { 255, 0, 0, 255 }; // ì„ íƒëœ í•­ëª© ë¹¨ê°„ìƒ‰
         }
         renderTextCentered("Quit", 500, quitColor);
 
         SDL_RenderPresent(renderer);
     }
 }
-// °ÔÀÓ ½ÃÀÛ È­¸é ÇÔ¼ö
+// ê²Œì„ ì‹œì‘ í™”ë©´ í•¨ìˆ˜
 void gameStart() {
     Paddle paddle(SCREEN_WIDTH / 2 - PADDLE_WIDTH / 2, SCREEN_HEIGHT - 50);
     Ball ball(SCREEN_WIDTH / 2 - BALL_SIZE / 2, SCREEN_HEIGHT / 2 - BALL_SIZE / 2);
     setBallSpeed(ball, levelstate);
     bool paused = false;
 
-    // ºí·Ï °´Ã¼ »ı¼º
+    // ë¸”ë¡ ê°ì²´ ìƒì„±
     std::vector<Block> blocks;
     initializeGame(blocks);
 
-    int lives = 5  ; // ³²Àº ¸ñ¼û
-    int score = 0; // Á¡¼ö
-    bool quit = false; // °ÔÀÓ ·çÇÁ Á¦¾î º¯¼ö
-    SDL_Event e; // ÀÌº¥Æ® Ã³¸® º¯¼ö
+    int lives = 5  ; // ë‚¨ì€ ëª©ìˆ¨
+    int score = 0; // ì ìˆ˜
+    bool quit = false; // ê²Œì„ ë£¨í”„ ì œì–´ ë³€ìˆ˜
+    SDL_Event e; // ì´ë²¤íŠ¸ ì²˜ë¦¬ ë³€ìˆ˜
 
-    // °ÔÀÓ ·çÇÁ ½ÃÀÛ
-    while (!quit && lives > 0) { // ¸ñ¼ûÀÌ 0ÀÌ µÇ¸é °ÔÀÓ Á¾·á
-        // ÀÌº¥Æ® Ã³¸®
+    // ê²Œì„ ë£¨í”„ ì‹œì‘
+    while (!quit && lives > 0) { // ëª©ìˆ¨ì´ 0ì´ ë˜ë©´ ê²Œì„ ì¢…ë£Œ
+        // ì´ë²¤íŠ¸ ì²˜ë¦¬
         while (SDL_PollEvent(&e) != 0) {
-            // ¸ğµç ºí·ÏÀÌ ÆÄ±«µÇ¾ú´ÂÁö È®ÀÎ
+            // ëª¨ë“  ë¸”ë¡ì´ íŒŒê´´ë˜ì—ˆëŠ”ì§€ í™•ì¸
             bool allBlocksDestroyed = true;
             for (const auto& block : blocks) {
                 if (!block.destroyed) {
@@ -508,88 +508,89 @@ void gameStart() {
                 }
             }
            
-            // ¸ğµç ºí·ÏÀÌ ÆÄ±«µÇ¾úÀ» ¶§ °ÔÀÓ Å¬¸®¾î Ã³¸®
+            // ëª¨ë“  ë¸”ë¡ì´ íŒŒê´´ë˜ì—ˆì„ ë•Œ ê²Œì„ í´ë¦¬ì–´ ì²˜ë¦¬
             if (allBlocksDestroyed) {
                 std::cout << allBlocksDestroyed;
                 gameover(score);
-                quit = true; // °ÔÀÓ Å¬¸®¾î »óÅÂ·Î ¼³Á¤ÇÏ¿© °ÔÀÓ ·çÇÁ¸¦ Á¾·á
+                quit = true; // ê²Œì„ í´ë¦¬ì–´ ìƒíƒœë¡œ ì„¤ì •í•˜ì—¬ ê²Œì„ ë£¨í”„ë¥¼ ì¢…ë£Œ
                 
             }
-            if (e.type == SDL_QUIT) { // Ã¢ ´İ±â ¹öÆ°À» ´­·¶À» ¶§
+            if (e.type == SDL_QUIT) { // ì°½ ë‹«ê¸° ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œ
                 quit = true;
             }
-            else if (e.type == SDL_KEYDOWN) { // Å°°¡ ´­·ÈÀ» ¶§
+            else if (e.type == SDL_KEYDOWN) { // í‚¤ê°€ ëˆŒë ¸ì„ ë•Œ
                 switch (e.key.keysym.sym) {
-                case SDLK_LEFT: // ¿ŞÂÊ È­»ìÇ¥ Å°
+                case SDLK_LEFT: // ì™¼ìª½ í™”ì‚´í‘œ í‚¤
                     paddle.moveLeft();
                     break;
-                case SDLK_RIGHT: // ¿À¸¥ÂÊ È­»ìÇ¥ Å°
+                case SDLK_RIGHT: // ì˜¤ë¥¸ìª½ í™”ì‚´í‘œ í‚¤
                     paddle.moveRight();
                     break;
                 }
             }
         }
 
-        // °ø ÀÌµ¿
+        // ê³µ ì´ë™
         
         ball.move();
         
 
-        // °ø°ú ÆĞµéÀÇ Ãæµ¹ È®ÀÎ
+        // ê³µê³¼ íŒ¨ë“¤ì˜ ì¶©ëŒ í™•ì¸
         if (checkCollision(ball.rect, paddle.rect)) {
             ball.yVel = -ball.yVel;
         }
 
-        // °ø°ú ºí·ÏÀÇ Ãæµ¹ È®ÀÎ
+        // ê³µê³¼ ë¸”ë¡ì˜ ì¶©ëŒ í™•ì¸
         for (auto& block : blocks) {
             if (!block.destroyed && checkCollision(ball.rect, block.rect)) {
-                if (block.strength == 1) { // °­µµ°¡ 1ÀÎ ºí·Ï (ÀÏ¹İ ºí·Ï ¹× Æ¯¼ö ºí·Ï)
+                if (block.strength == 1) { // ê°•ë„ê°€ 1ì¸ ë¸”ë¡ (ì¼ë°˜ ë¸”ë¡ ë° íŠ¹ìˆ˜ ë¸”ë¡)
                     block.destroyed = true;
-                    if (block.special) { // Æ¯¼ö ºí·ÏÀÎ °æ¿ì, ÁÖº¯ ºí·Ïµµ ÆÄ±«
+                    if (block.special) { // íŠ¹ìˆ˜ ë¸”ë¡ì¸ ê²½ìš°, ì£¼ë³€ ë¸”ë¡ë„ íŒŒê´´
                         destroySurroundingBlocks(blocks, block.rect.x, block.rect.y);
                     }
                 }
-                else { // °­µµ°¡ 2 ÀÌ»óÀÎ ºí·Ï (°­ÇÑ ºí·Ï)
-                    block.decreaseStrength(); // °­µµ °¨¼Ò
-                    // »ö±ò ¿¬ÇÏ°Ô º¯°æ
+                else { // ê°•ë„ê°€ 2 ì´ìƒì¸ ë¸”ë¡ (ê°•í•œ ë¸”ë¡)
+                    block.decreaseStrength(); // ê°•ë„ ê°ì†Œ
+                    // ìƒ‰ê¹” ì—°í•˜ê²Œ ë³€ê²½
                     SDL_SetRenderDrawColor(renderer, block.color.r, block.color.g, block.color.b, 255);
                 }
                 ball.yVel = -ball.yVel;
-                score++; // ºí·ÏÀÌ ±úÁ³À» ¶§ Á¡¼ö Áõ°¡
+                score++; // ë¸”ë¡ì´ ê¹¨ì¡Œì„ ë•Œ ì ìˆ˜ ì¦ê°€
                 break;
             }
         }
 
-        // °øÀÌ È­¸é ÇÏ´Ü¿¡ ´ê¾ÒÀ» ¶§ Ã³¸®
+        // ê³µì´ í™”ë©´ í•˜ë‹¨ì— ë‹¿ì•˜ì„ ë•Œ ì²˜ë¦¬
         if (ball.rect.y + ball.rect.h >= SCREEN_HEIGHT) {
-           
+            ball.reset(SCREEN_WIDTH / 2 - BALL_SIZE / 2, SCREEN_HEIGHT / 2 - BALL_SIZE / 2);
+
 
 
             setBallSpeed(ball, levelstate);
             lives--;
             if (lives <= 0) {
-                quit = true; // ¸ñ¼ûÀÌ ¾øÀ¸¸é °ÔÀÓ Á¾·á
+                quit = true; // ëª©ìˆ¨ì´ ì—†ìœ¼ë©´ ê²Œì„ ì¢…ë£Œ
             }
         }
 
-        // È­¸éÀ» °ËÀº»öÀ¸·Î Ã¤¿ò
+        // í™”ë©´ì„ ê²€ì€ìƒ‰ìœ¼ë¡œ ì±„ì›€
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
-        // ÆĞµé, °ø, ºí·Ï ·»´õ¸µ
+        // íŒ¨ë“¤, ê³µ, ë¸”ë¡ ë Œë”ë§
         paddle.render(renderer);
         ball.render(renderer);
         for (const auto& block : blocks) {
             block.render(renderer);
         }
 
-        // Á¡¼ö Ç¥½Ã
+        // ì ìˆ˜ í‘œì‹œ
         renderText("Score: " + std::to_string(score), 10, { 255, 255, 255, 255 }, 24);
 
-        // ·»´õ¸µ °»½Å
+        // ë Œë”ë§ ê°±ì‹ 
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(16); // ÇÁ·¹ÀÓ Á¦ÇÑ (¾à 60fps)
+        SDL_Delay(16); // í”„ë ˆì„ ì œí•œ (ì•½ 60fps)
     }
     
     if (lives <= 0) {
@@ -600,62 +601,62 @@ void gameStart() {
 
 
 
-// °ÔÀÓ ½ÃÀÛ ¸Ş´º È­¸éÀ» º¸¿©ÁÖ´Â ÇÔ¼ö
+// ê²Œì„ ì‹œì‘ ë©”ë‰´ í™”ë©´ì„ ë³´ì—¬ì£¼ëŠ” í•¨ìˆ˜
 void showMenu() {
     bool quit = false;
     SDL_Event e;
-    int selectedOption = 0; // ¼±ÅÃµÈ ¿É¼Ç (0: °ÔÀÓ ½ÃÀÛ, 1: ³­ÀÌµµ ¼³Á¤)
+    int selectedOption = 0; // ì„ íƒëœ ì˜µì…˜ (0: ê²Œì„ ì‹œì‘, 1: ë‚œì´ë„ ì„¤ì •)
 
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
-                startstate = -1; // ÇÁ·Î±×·¥ Á¾·á
+                startstate = -1; // í”„ë¡œê·¸ë¨ ì¢…ë£Œ
             }
             else if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_UP:
-                    selectedOption = (selectedOption - 1 + 2) % 2; // À§ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption - 1 + 2) % 2; // ìœ„ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_DOWN:
-                    selectedOption = (selectedOption + 1) % 2; // ¾Æ·¡ ¹æÇâÅ°·Î ¼±ÅÃÁö º¯°æ
+                    selectedOption = (selectedOption + 1) % 2; // ì•„ë˜ ë°©í–¥í‚¤ë¡œ ì„ íƒì§€ ë³€ê²½
                     break;
                 case SDLK_RETURN:
                     if (selectedOption == 0) {
-                        startstate = 1; // °ÔÀÓ ½ÃÀÛ
+                        startstate = 1; // ê²Œì„ ì‹œì‘
                         quit = true;
                     }
                     else if (selectedOption == 1) {
                         startstate = 2;
                         quit = true;
-                        // ³­ÀÌµµ ¼³Á¤À» ¿©±â¿¡ Ãß°¡ÇÒ ¼ö ÀÖ½À´Ï´Ù.
-                        // ¿¹: levelstate¸¦ Á¶ÀıÇÏ´Â ÄÚµå
+                        // ë‚œì´ë„ ì„¤ì •ì„ ì—¬ê¸°ì— ì¶”ê°€í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                        // ì˜ˆ: levelstateë¥¼ ì¡°ì ˆí•˜ëŠ” ì½”ë“œ
                     }
                     break;
                 }
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); // ¹è°æ»ö º¸¶ó»ö
+        SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); // ë°°ê²½ìƒ‰ ë³´ë¼ìƒ‰
         SDL_RenderClear(renderer);
 
-        // ¹è°æ ÀÌ¹ÌÁö ·»´õ¸µ
+        // ë°°ê²½ ì´ë¯¸ì§€ ë Œë”ë§
         renderBackground("background_image.jpg");
 
-        // Å¸ÀÌÆ² ÅØ½ºÆ®
+        // íƒ€ì´í‹€ í…ìŠ¤íŠ¸
         renderText("Block-breaking game", SCREEN_WIDTH / 2 - 100, 100, { 255, 255, 255, 255 });
 
-        // °ÔÀÓ ½ÃÀÛ ÅØ½ºÆ®
-        SDL_Color startColor = { 255, 255, 255, 255 }; // ±âº» »ö»ó Èò»ö
+        // ê²Œì„ ì‹œì‘ í…ìŠ¤íŠ¸
+        SDL_Color startColor = { 255, 255, 255, 255 }; // ê¸°ë³¸ ìƒ‰ìƒ í°ìƒ‰
         if (selectedOption == 0) {
-            startColor = { 255, 0, 0, 255 }; // ¼±ÅÃµÈ Ç×¸ñ »¡°£»ö
+            startColor = { 255, 0, 0, 255 }; // ì„ íƒëœ í•­ëª© ë¹¨ê°„ìƒ‰
         }
         renderText("Game start", SCREEN_WIDTH / 2 - 50, 300, startColor);
 
-        // ³­ÀÌµµ ¼³Á¤ ÅØ½ºÆ®
-        SDL_Color settingsColor = { 255, 255, 255, 255 }; // ±âº» »ö»ó Èò»ö
+        // ë‚œì´ë„ ì„¤ì • í…ìŠ¤íŠ¸
+        SDL_Color settingsColor = { 255, 255, 255, 255 }; // ê¸°ë³¸ ìƒ‰ìƒ í°ìƒ‰
         if (selectedOption == 1) {
-            settingsColor = { 255, 0, 0, 255 }; // ¼±ÅÃµÈ Ç×¸ñ »¡°£»ö
+            settingsColor = { 255, 0, 0, 255 }; // ì„ íƒëœ í•­ëª© ë¹¨ê°„ìƒ‰
         }
         renderText("Level Settings", SCREEN_WIDTH / 2 - 50, 400, settingsColor);
 
@@ -668,42 +669,42 @@ void showMenu() {
 
 
 int main(int argc, char* args[]) {
-    // SDL ÃÊ±âÈ­
+    // SDL ì´ˆê¸°í™”
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL ÃÊ±âÈ­ ½ÇÆĞ! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "SDL ì´ˆê¸°í™” ì‹¤íŒ¨! SDL_Error: " << SDL_GetError() << std::endl;
         return -1;
     }
 
-    // TTF ÃÊ±âÈ­
+    // TTF ì´ˆê¸°í™”
     if (TTF_Init() == -1) {
-        std::cerr << "TTF ÃÊ±âÈ­ ½ÇÆĞ! TTF_Error: " << TTF_GetError() << std::endl;
+        std::cerr << "TTF ì´ˆê¸°í™” ì‹¤íŒ¨! TTF_Error: " << TTF_GetError() << std::endl;
         SDL_Quit();
         return -1;
     }
 
-    // ÆùÆ® ·Îµå
+    // í°íŠ¸ ë¡œë“œ
     font = TTF_OpenFont(u8"Roboto/Roboto-Black.ttf", 24);
     if (font == NULL) {
-        std::cerr << "ÆùÆ® ·Îµå ½ÇÆĞ! TTF_Error: " << TTF_GetError() << std::endl;
+        std::cerr << "í°íŠ¸ ë¡œë“œ ì‹¤íŒ¨! TTF_Error: " << TTF_GetError() << std::endl;
         TTF_Quit();
         SDL_Quit();
         return -1;
     }
 
-    // À©µµ¿ì »ı¼º
-    window = SDL_CreateWindow("SDL ºí·Ï ±ú±â °ÔÀÓ", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    // ìœˆë„ìš° ìƒì„±
+    window = SDL_CreateWindow("SDL ë¸”ë¡ ê¹¨ê¸° ê²Œì„", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
-        std::cerr << "À©µµ¿ì »ı¼º ½ÇÆĞ! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "ìœˆë„ìš° ìƒì„± ì‹¤íŒ¨! SDL_Error: " << SDL_GetError() << std::endl;
         TTF_CloseFont(font);
         TTF_Quit();
         SDL_Quit();
         return -1;
     }
 
-    // ·»´õ·¯ »ı¼º
+    // ë Œë”ëŸ¬ ìƒì„±
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL) {
-        std::cerr << "·»´õ·¯ »ı¼º ½ÇÆĞ! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "ë Œë”ëŸ¬ ìƒì„± ì‹¤íŒ¨! SDL_Error: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
         TTF_CloseFont(font);
         TTF_Quit();
@@ -711,7 +712,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    // ¸ŞÀÎ ·çÇÁ: °ÔÀÓ ½ÃÀÛ È­¸é°ú °ÔÀÓ È­¸éÀ» ÀüÈ¯
+    // ë©”ì¸ ë£¨í”„: ê²Œì„ ì‹œì‘ í™”ë©´ê³¼ ê²Œì„ í™”ë©´ì„ ì „í™˜
     while (startstate != -1) {
         if (startstate == 0) {
             showMenu();
@@ -723,10 +724,10 @@ int main(int argc, char* args[]) {
             gameStart();
             
            
-            startstate = 0; // °ÔÀÓ Á¾·á ÈÄ ´Ù½Ã ¸Ş´º·Î µ¹¾Æ°¨
+            startstate = 0; // ê²Œì„ ì¢…ë£Œ í›„ ë‹¤ì‹œ ë©”ë‰´ë¡œ ëŒì•„ê°
         }
     }
-    // SDL Á¤¸®
+    // SDL ì •ë¦¬
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
