@@ -104,12 +104,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(Solutiondir)Project1\SDL2-2.30.3\include;$(Solutiondir)Project1\SDL2_image-2.8.2\include;$(Solutiondir)Project1\SDL2_ttf-2.22.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Solutiondir)SDL2_image-2.8.2\include;$(Solutiondir)SDL2_ttf-2.22.0\include;$(Solutiondir)SDL2-2.30.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Solutiondir)Project1\SDL2-2.30.3\lib\x64;$(Solutiondir)Project1\SDL2_ttf-2.22.0\lib\x64;$(Solutiondir)Project1\SDL2_image-2.8.2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Solutiondir)SDL2-2.30.3\lib\x64;$(Solutiondir)SDL2_ttf-2.22.0\lib\x64;$(Solutiondir)SDL2_image-2.8.2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
